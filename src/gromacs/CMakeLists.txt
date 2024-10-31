@@ -217,6 +217,28 @@ else()
     add_library(libgromacs ${LIBGROMACS_SOURCES})
 endif()
 
+# Enzyme MPFR GMP
+find_package(PkgConfig)
+pkg_check_modules(MPFR REQUIRED mpfr gmp)
+
+# Enzyme LLD
+find_package(Enzyme REQUIRED CONFIG)
+
+# Enzyme
+target_compile_options(libgromacs PUBLIC "-include" "enzyme/fprt/mpfr.h")
+
+# Truncate all
+# target_compile_options(libgromacs PUBLIC "-fpass-plugin=/scratch/fhrold/riken/Enzyme/enzyme/build/Enzyme/LLVMEnzyme-20.so" "-Xclang" "-load" "SHELL:-Xclang" "/scratch/fhrold/riken/Enzyme/enzyme/build/Enzyme/LLVMEnzyme-20.so" "-Rpass=enzyme" "-mllvm" "-enzyme-truncate-all=64to2-2")
+# target_link_options(libgromacs PUBLIC "--allow-multiple-definition")
+# target_include_directories(libgromacs PUBLIC ${MPFR_INCLUDE_DIRS} "/scratch/fhrold/riken/Enzyme/enzyme/include")
+# target_link_libraries(libgromacs PUBLIC ${MPFR_LINK_LIBRARIES})
+
+# Truncate with LTO
+target_compile_definitions(libgromacs PUBLIC -DNOVERSION)
+target_compile_options(libgromacs PUBLIC "-include" "enzyme/fprt/mpfr.h")
+target_link_libraries(libgromacs PUBLIC ${MPFR_LINK_LIBRARIES})
+target_include_directories(libgromacs PUBLIC ${MPFR_INCLUDE_DIRS} "/scratch/fhrold/riken/Enzyme/enzyme/include")
+
 if (TARGET Heffte::Heffte)
     target_link_libraries(libgromacs PRIVATE Heffte::Heffte)
 endif()
